@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Code\\CustomerRank\\Core\\Core.csproj": {}
+    "D:\\Code\\LCustomerRank\\Core\\Core.csproj": {}
   },
   "projects": {
-    "D:\\Code\\CustomerRank\\Core\\Core.csproj": {
+    "D:\\Code\\LCustomerRank\\Core\\Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Code\\CustomerRank\\Core\\Core.csproj",
+        "projectUniqueName": "D:\\Code\\LCustomerRank\\Core\\Core.csproj",
         "projectName": "Core",
-        "projectPath": "D:\\Code\\CustomerRank\\Core\\Core.csproj",
+        "projectPath": "D:\\Code\\LCustomerRank\\Core\\Core.csproj",
         "packagesPath": "C:\\Users\\oocn\\.nuget\\packages\\",
-        "outputPath": "D:\\Code\\CustomerRank\\Core\\obj\\",
+        "outputPath": "D:\\Code\\LCustomerRank\\Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

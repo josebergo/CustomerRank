@@ -1,115 +1,130 @@
-﻿using Core.Model;
+﻿using Core.Extentions;
+using Core.Model;
+using System.Collections.Concurrent;
 
-namespace Services.Services;
-
-public class LeaderboardService : ILeaderboardService
+namespace Services.Services
 {
-    // SortedSet for O(log n) operations on score-based ordering
-    private readonly SortedSet<(decimal Score, long CustomerId, Customer Customer)> _scoreSet;
-    // Dictionary for O(1) customer lookup
-    private readonly Dictionary<long, Customer> _customers;
-
-    public LeaderboardService()
+    public class LeaderboardService : ILeaderboardService
     {
-        _scoreSet = new SortedSet<(decimal Score, long CustomerId, Customer Customer)>(
-            Comparer<(decimal Score, long CustomerId, Customer Customer)>.Create((a, b) =>
-            {
-                var scoreCompare = b.Score.CompareTo(a.Score); // Descending score
-                return scoreCompare != 0 ? scoreCompare : a.CustomerId.CompareTo(b.CustomerId); // Ascending ID for same score
-            }));
-        _customers = new Dictionary<long, Customer>();
-    }
+        private readonly ConcurrentDictionary<long, Customer> _customers = new();
+        private readonly object _rebuildLock = new object();
+        private volatile List<Customer> _rankedCustomers;
+        private readonly Timer _rebuildTimer;
 
-
-    public decimal UpdateScore(long customerId, decimal scoreDelta)
-    {
-        lock (_scoreSet) // Thread-safety for concurrent access
+        public LeaderboardService()
         {
-            if (!_customers.TryGetValue(customerId, out var customer))
-            {
-                customer = new Customer { CustomerId = customerId, Score = 0 };
-                _customers[customerId] = customer;
-            }
+            _rankedCustomers = new List<Customer>();
+            // set 100ms
+            _rebuildTimer = new Timer(_ => RebuildLeaderboard(), null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100));
+        }
 
-            // Remove old entry from SortedSet if exists
-            if (customer.Score > 0)
-            {
-                _scoreSet.Remove((customer.Score, customerId, customer));
-            }
-
-            // Update score
-            customer.Score = Math.Max(0, customer.Score + scoreDelta);
-
-            // Add back to SortedSet if score > 0
-            if (customer.Score > 0)
-            {
-                _scoreSet.Add((customer.Score, customerId, customer));
-                // Update ranks
-                UpdateRanks();
-            }
-            else
-            {
-                customer.Rank = 0; // Not in leaderboard if score <= 0
-            }
+        public decimal UpdateScore(long customerId, decimal scoreDelta)
+        {
+            var customer = _customers.AddOrUpdate(customerId,
+                new Customer { CustomerId = customerId, Score = Math.Max(0, scoreDelta) },
+                (id, existing) =>
+                {
+                    existing.Score = Math.Max(0, existing.Score + scoreDelta);
+                    return existing;
+                });
 
             return customer.Score;
         }
-    }
 
-    private void UpdateRanks()
-    {
-        int rank = 1;
-        foreach (var entry in _scoreSet)
+        private void RebuildLeaderboard()
         {
-            entry.Customer.Rank = rank++;
-        }
-    }
+            //non-blocking
+            if (!Monitor.TryEnter(_rebuildLock))
+                return; 
 
-    public List<Customer> GetCustomersByRank(int start, int end)
-    {
-        lock (_scoreSet)
-        {
-            if (start < 1 || end < start || _scoreSet.Count == 0)
-                return new List<Customer>();
-
-            // Directly access SortedSet elements by index range
-            return _scoreSet
-                .Skip(start - 1)
-                .Take(end - start + 1)
-                .Select(x => x.Customer)
-                .ToList();
-        }
-    }
-
-    public List<Customer> GetCustomersById(long customerId, int high = 0, int low = 0)
-    {
-        lock (_scoreSet)
-        {
-            if (!_customers.TryGetValue(customerId, out var customer) || customer.Rank == 0)
-                return new List<Customer>();
-
-            var result = new List<Customer>();
-            int targetRank = customer.Rank;
-
-            // Get higher ranked customers
-            if (high > 0)
+            try
             {
-                result.AddRange(_scoreSet
-                    .Skip(Math.Max(0, targetRank - high - 1))
-                    .Take(Math.Min(high, targetRank - 1))
-                    .Select(x => x.Customer));
+                var newScoreSet = new SortedSet<(decimal Score, long CustomerId, Customer Customer)>(Extend.CreateScoreComparer());
+                var newRankedList = new List<Customer>();
+
+                int rank = 1;
+                foreach (var customer in _customers.Values.Where(c => c.Score > 0).OrderByDescending(c => c.Score).ThenBy(c => c.CustomerId))
+                {
+                    customer.Rank = rank++;
+                    newScoreSet.Add((customer.Score, customer.CustomerId, customer));
+                    newRankedList.Add(customer);
+                }
+
+                //atom replace
+                _rankedCustomers = newRankedList;
+            }
+            finally
+            {
+                Monitor.Exit(_rebuildLock);
+            }
+        }
+
+        public IReadOnlyList<Customer> GetCustomersByRank(int start, int end)
+        {
+            // get current snapshot
+            var currentRankedList = _rankedCustomers;
+
+            if (start < 1 || end < start || currentRankedList.Count == 0)
+                return Array.Empty<Customer>();
+ 
+
+            // boundary checking
+            int actualStart = Math.Max(0, start - 1);
+            int actualEnd = Math.Min(currentRankedList.Count - 1, end - 1);
+            int count = actualEnd - actualStart + 1;
+
+            if (count <= 0)
+                return Array.Empty<Customer>();
+
+            // the GetRange of List is O(n) than fastest SortedSet.Skip
+            return currentRankedList.GetRange(actualStart, count);
+        }
+
+ 
+
+
+        public IReadOnlyList<Customer> GetCustomersById(long customerId, int high = 0, int low = 0)
+        {
+            // Get current snapshot
+            var currentRankedList = _rankedCustomers; 
+
+            if (!_customers.TryGetValue(customerId, out var customer) || customer.Rank == 0)
+                return Array.Empty<Customer>();
+
+            int targetRank = customer.Rank;
+            // as 0 index
+            int targetIndex = targetRank - 1; 
+
+            // expected capacity
+            int totalCount = Math.Min(high, targetRank - 1) + 1 + Math.Min(low, currentRankedList.Count - targetRank);
+            var result = new List<Customer>(totalCount);
+
+            // use index access O(1) 
+            // get high
+            if (high > 0 && targetRank > 1)
+            {
+                int startIndex = Math.Max(0, targetIndex - high);
+                int endIndex = targetIndex - 1;
+
+                for (int i = startIndex; i <= endIndex; i++)
+                {
+                    result.Add(currentRankedList[i]);
+                }
             }
 
-            // Add target customer
+            // add self
             result.Add(customer);
 
-            // Get lower ranked customers
-            if (low > 0)
+            // get low
+            if (low > 0 && targetIndex + 1 < currentRankedList.Count)
             {
-                result.AddRange(_scoreSet
-                    .Skip(targetRank)
-                    .Take(low)
-                    .Select(x => x.Customer));
+                int startIndex = targetIndex + 1;
+                int endIndex = Math.Min(currentRankedList.Count - 1, targetIndex + low);
+
+                for (int i = startIndex; i <= endIndex; i++)
+                {
+                    result.Add(currentRankedList[i]);
+                }
             }
 
             return result;

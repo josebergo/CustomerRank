@@ -28,6 +28,33 @@ namespace CustomerRank.Controllers
             return Ok(newScore);
         }
 
+        [HttpPost("/customer/test")]
+        public ActionResult<decimal> UpdateScore1()
+        {
+            const int insertionCount = 5_000_000;
+            var random = new Random(42);
+
+            var stardate = DateTime.Now;
+
+            for (int i = 1; i <= insertionCount; i++)
+            {
+                long customerId = i;
+                decimal score = (decimal)(random.NextDouble() * 2000 - 1000);
+
+                var result = _leaderboardService.UpdateScore(customerId, score);
+
+                if (i % 10000 == 0)
+                {
+                    Console.WriteLine($"Processed {i:N0} insertions...");
+                }
+            }
+
+            TimeSpan timeSpan = DateTime.Now - stardate;
+            Console.WriteLine($"Total time: {timeSpan.TotalSeconds:N2} seconds");
+ 
+            return Ok();
+        }
+
         [HttpGet("/leaderboard")]
         public ActionResult<List<Customer>> GetCustomersByRank([FromQuery] int start, [FromQuery] int end)
         {
@@ -36,10 +63,10 @@ namespace CustomerRank.Controllers
 
             var customers = _leaderboardService.GetCustomersByRank(start, end);
             return Ok(customers);
-        }
+        }        
 
         [HttpGet("/leaderboard/{customerId}")]
-        public ActionResult<List<Customer>> GetCustomersById(long customerId, [FromQuery] int high = 0, [FromQuery] int low = 0)
+        public ActionResult<IReadOnlyList<Customer>> GetCustomersById(long customerId, [FromQuery] int high = 0, [FromQuery] int low = 0)
         {
             if (customerId <= 0)
                 return BadRequest("CustomerId must be positive");
@@ -50,5 +77,6 @@ namespace CustomerRank.Controllers
             var customers = _leaderboardService.GetCustomersById(customerId, high, low);
             return Ok(customers);
         }
+         
     }
 }
