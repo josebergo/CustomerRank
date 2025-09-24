@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CustomerRank\CustomerRank.csproj" />
+    <ProjectReference Include="..\CustomerRank\Web.Api.csproj" />
     <ProjectReference Include="..\Services\Services.csproj" />
   </ItemGroup>
 

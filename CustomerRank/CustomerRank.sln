@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36221.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomerRank", "CustomerRank.csproj", "{AAF5461D-DF87-4AEE-89E9-AC2D0B6948A2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web.Api", "Web.Api.csproj", "{AAF5461D-DF87-4AEE-89E9-AC2D0B6948A2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services", "..\Services\Services.csproj", "{B253E65A-A814-4CA7-BE8A-84A9B39A6EA6}"
 EndProject
