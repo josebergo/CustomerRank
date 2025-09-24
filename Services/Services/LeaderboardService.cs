@@ -39,14 +39,11 @@ namespace Services.Services
 
             try
             {
-                var newScoreSet = new SortedSet<(decimal Score, long CustomerId, Customer Customer)>(Extend.CreateScoreComparer());
                 var newRankedList = new List<Customer>();
-
                 int rank = 1;
                 foreach (var customer in _customers.Values.Where(c => c.Score > 0).OrderByDescending(c => c.Score).ThenBy(c => c.CustomerId))
                 {
                     customer.Rank = rank++;
-                    newScoreSet.Add((customer.Score, customer.CustomerId, customer));
                     newRankedList.Add(customer);
                 }
 
