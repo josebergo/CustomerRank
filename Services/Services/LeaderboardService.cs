@@ -35,7 +35,7 @@ namespace Services.Services
         {
             //non-blocking
             if (!Monitor.TryEnter(_rebuildLock))
-                return; 
+                return;
 
             try
             {
@@ -63,7 +63,7 @@ namespace Services.Services
 
             if (start < 1 || end < start || currentRankedList.Count == 0)
                 return Array.Empty<Customer>();
- 
+
 
             // boundary checking
             int actualStart = Math.Max(0, start - 1);
@@ -77,20 +77,17 @@ namespace Services.Services
             return currentRankedList.GetRange(actualStart, count);
         }
 
- 
-
-
         public IReadOnlyList<Customer> GetCustomersById(long customerId, int high = 0, int low = 0)
         {
             // Get current snapshot
-            var currentRankedList = _rankedCustomers; 
+            var currentRankedList = _rankedCustomers;
 
             if (!_customers.TryGetValue(customerId, out var customer) || customer.Rank == 0)
                 return Array.Empty<Customer>();
 
             int targetRank = customer.Rank;
             // as 0 index
-            int targetIndex = targetRank - 1; 
+            int targetIndex = targetRank - 1;
 
             // expected capacity
             int totalCount = Math.Min(high, targetRank - 1) + 1 + Math.Min(low, currentRankedList.Count - targetRank);
