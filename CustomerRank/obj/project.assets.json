@@ -487,9 +487,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Code\\LCustomerRank\\CustomerRank\\CustomerRank.csproj",
-      "projectName": "CustomerRank",
-      "projectPath": "D:\\Code\\LCustomerRank\\CustomerRank\\CustomerRank.csproj",
+      "projectUniqueName": "D:\\Code\\LCustomerRank\\CustomerRank\\Web.Api.csproj",
+      "projectName": "Web.Api",
+      "projectPath": "D:\\Code\\LCustomerRank\\CustomerRank\\Web.Api.csproj",
       "packagesPath": "C:\\Users\\oocn\\.nuget\\packages\\",
       "outputPath": "D:\\Code\\LCustomerRank\\CustomerRank\\obj\\",
       "projectStyle": "PackageReference",

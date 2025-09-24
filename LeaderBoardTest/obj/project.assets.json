@@ -1372,23 +1372,6 @@
           "bin/placeholder/Core.dll": {}
         }
       },
-      "CustomerRank/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v8.0",
-        "dependencies": {
-          "Services": "1.0.0",
-          "Swashbuckle.AspNetCore": "6.6.2"
-        },
-        "compile": {
-          "bin/placeholder/CustomerRank.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/CustomerRank.dll": {}
-        },
-        "frameworkReferences": [
-          "Microsoft.AspNetCore.App"
-        ]
-      },
       "Services/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
@@ -1401,6 +1384,23 @@
         "runtime": {
           "bin/placeholder/Services.dll": {}
         }
+      },
+      "Web.Api/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "dependencies": {
+          "Services": "1.0.0",
+          "Swashbuckle.AspNetCore": "6.6.2"
+        },
+        "compile": {
+          "bin/placeholder/Web.Api.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Web.Api.dll": {}
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
       }
     }
   },
@@ -3335,26 +3335,26 @@
       "path": "../Core/Core.csproj",
       "msbuildProject": "../Core/Core.csproj"
     },
-    "CustomerRank/1.0.0": {
-      "type": "project",
-      "path": "../CustomerRank/CustomerRank.csproj",
-      "msbuildProject": "../CustomerRank/CustomerRank.csproj"
-    },
     "Services/1.0.0": {
       "type": "project",
       "path": "../Services/Services.csproj",
       "msbuildProject": "../Services/Services.csproj"
+    },
+    "Web.Api/1.0.0": {
+      "type": "project",
+      "path": "../CustomerRank/Web.Api.csproj",
+      "msbuildProject": "../CustomerRank/Web.Api.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net8.0": [
-      "CustomerRank >= 1.0.0",
       "MSTest >= 3.6.4",
       "Microsoft.NET.Test.Sdk >= 17.12.0",
       "Microsoft.Testing.Extensions.CodeCoverage >= 17.12.6",
       "Microsoft.Testing.Extensions.TrxReport >= 1.4.3",
       "Moq >= 4.20.72",
       "Services >= 1.0.0",
+      "Web.Api >= 1.0.0",
       "xunit >= 2.9.3"
     ]
   },
@@ -3390,8 +3390,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "D:\\Code\\LCustomerRank\\CustomerRank\\CustomerRank.csproj": {
-              "projectPath": "D:\\Code\\LCustomerRank\\CustomerRank\\CustomerRank.csproj"
+            "D:\\Code\\LCustomerRank\\CustomerRank\\Web.Api.csproj": {
+              "projectPath": "D:\\Code\\LCustomerRank\\CustomerRank\\Web.Api.csproj"
             },
             "D:\\Code\\LCustomerRank\\Services\\Services.csproj": {
               "projectPath": "D:\\Code\\LCustomerRank\\Services\\Services.csproj"
