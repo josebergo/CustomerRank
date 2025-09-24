@@ -5,3 +5,6 @@
 
  #Tip
  .Net8
+
+ Using concurrent Dictianry as inner storage for LeaderBoards.
+ Using index for get method as well raise speed.
